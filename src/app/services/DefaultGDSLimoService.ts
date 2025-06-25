@@ -11,10 +11,10 @@ export function createGDSLimoService(): GDSLimoService {
                 "C_GEN_MISSION": []
             };
 
+            console.log(`📡 [GDSLimoService] getAllMissions()`,);
             return wayPlanService.getAllRessources(params);
         },
         async getFilteredMissions(params): Promise<GDSLimoApiResponse> {
-
             return wayPlanService.getAllRessources(params);
         },
         async createMission(mission: any): Promise<GDSLimoApiResponse> {

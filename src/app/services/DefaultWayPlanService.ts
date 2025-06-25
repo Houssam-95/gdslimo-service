@@ -1,4 +1,4 @@
-import { Mission } from "@/app/models/Mission";
+
 import { WayPlanApiResponse } from "@/app/models/WayPlanApiResponse";
 import WayPlanService from "./interfaces/WayPlanService";
 import axios from "axios";
@@ -61,7 +61,7 @@ export function createWayPlanService(): WayPlanService {
 
     return {
         async getAllRessources(params: any = { "C_GEN_MISSION": [] }): Promise<WayPlanApiResponse> {
-
+            console.log(`📡 [WayPlanService] getAllRessources()`,);
             const jwtToken = defineJWT(params);
 
             const response = await webClient.post<WayPlanApiResponse>(
@@ -75,6 +75,29 @@ export function createWayPlanService(): WayPlanService {
             );
 
             // a response has limo value as key { "dev": {} } instead of { "limo": "dev" }
+            const fakeData: WayPlanApiResponse = {
+                "john_doe": {
+                    "C_GEN_MISSION": [
+                        {
+                            "MIS_ID": "1001",
+                            "status": "PENDING",
+                            "description": "Première mission de livraison."
+                        },
+                        {
+                            "MIS_ID": "1002",
+                            "status": "COMPLETED",
+                            "description": "Mission de récupération de colis."
+                        },
+                        {
+                            "MIS_ID": "1003",
+                            "status": "IN_PROGRESS",
+                            "description": "Nouvelle assignation en cours."
+                        }
+                    ]
+                }
+            }
+
+            //return fakeData;
             return response.data;
 
         },

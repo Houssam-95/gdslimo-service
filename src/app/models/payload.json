@@ -1,0 +1,22 @@
+// {
+//     "mission": { // MIS
+//         "reglement": { // REL
+//             "chauffer": {},
+//             "facture": {
+//                 "client": {}
+//             }
+//         },
+//         "presence": { // PRS
+//             "passager": {}
+//         },
+//         "fraisDeMission": { // FMI
+//             "service": {        // SER
+//                 "typeDeService": {}, // TSE
+//                 "typeDeVehicule": {} // TVE
+//             }
+//         },
+//         "etapeDePresence": { // EPR
+//             "lieu": {} // LIE
+//         }
+//     }
+// }
