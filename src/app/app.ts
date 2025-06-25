@@ -18,20 +18,23 @@ export function startServer() {
     // Middleware to parse JSON 
     app.use(express.json());
 
-    // Routes
-    app.use('/api/v1/missions', missionRouter)
+    // Routes for missions and mission
+    // we can not create '/api/v1/missions' because for creation it's '/api/v1/mission' 
+    // we delegate to missionRouter for handling routing
+    app.use('/api/v1/', missionRouter)
 
-    // Route de base de l'API 
-    app.get('/api/v1/', (req, res) => {
-        res.json({
-            message: 'Bienvenue sur GDSLimo Api',
-            resources: {
-                missions: '/api/v1/missions'
-            }
-        });
+    const routesInfo = {
+        message: 'Bienvenue sur GDSLimo Api',
+        routes: [
+            { method: 'GET', path: '/api/v1/missions', description: 'Fetch list of missions' },
+            { method: 'POST', path: '/api/v1/mission', description: 'Create a new mission' },
+        ]
+    };
+
+    app.get('/', (req, res) => {
+        res.json(routesInfo);
     });
 
-    // Route par défaut si aucune autre route ne correspond
     app.use((req, res) => {
         res.status(404).send('Ressource non trouvée.');
     });

@@ -5,9 +5,8 @@ const missionController = createMissionController();
 
 const router = Router();
 
-router
-    .get('/', missionController.getAllMissions)
-    .post('/', missionController.createMission)
+router.get('/missions', missionController.getAllMissions)
+//router.post('/mission', missionController.createMission)
 
 
 export default router;
