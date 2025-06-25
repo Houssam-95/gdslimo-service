@@ -1,23 +1,19 @@
 
 
-export function transformMinMaxQuery(requestQuery: any): any {
-    const transformedParams: any = {}; // Le nouvel objet qui contiendra les paramètres transformés
+export function mapRequestQueryToWayPlanQuery(requestQuery: any): any {
+    const wayPlanParams: any = {};
 
-    // Regex pour trouver les clés qui se terminent par 'MIN' ou 'MAX'
-    const suffixRegex = /(MIN|MAX)$/i; // Insensible à la casse pour plus de flexibilité
-
-    // Utilise Object.entries pour parcourir chaque paire [clé, valeur]
     Object.entries(requestQuery).forEach(([key, value]) => {
-        let newKey = key as string; // Par défaut, la nouvelle clé est l'ancienne clé
+        // Same key 
+        let newKey = key;
 
-        // Teste si la clé actuelle se termine par 'MIN' ou 'MAX'
-        if (suffixRegex.test(key)) {
-            newKey = '#' + key; // Ajoute le '#' au début
+        // update key only if regex match 
+        if (/_(MAX|MIN|LIKE)$/.test(key)) {
+            newKey = key.replace(/_(MAX|MIN|LIKE)$/, '#$1');
         }
 
-        // Assignation de la valeur à la nouvelle clé dans l'objet transformé
-        transformedParams[newKey] = value;
+        wayPlanParams[newKey] = value;
     });
 
-    return transformedParams;
+    return wayPlanParams;
 }
