@@ -54,6 +54,6 @@ Our GDS API sends requests to Wayplan, and Wayplan has a special way of working:
 
 1.  **Set up the API:** Make sure your GDS API is running (e.g., `npm start` or `yarn dev`).
 
-2.  **Add your API_KEY and SECRET_KEY:** to get started.
+2.  **Add your API_KEY and SECRET_KEY:** to get started (you can also via JWT_TIME_EXPIRATION_ENABLED="false"to enable time expiration for your jwt).
 
 3.  **Make requests:** Use the generated JWT in the `Authorization: Bearer YOUR_TOKEN` header for all other calls to `/api/v1/mission`.
