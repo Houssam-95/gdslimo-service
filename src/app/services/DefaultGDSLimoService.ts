@@ -1,6 +1,8 @@
 import GDSLimoService from "./interfaces/GDSLimoService";
 import { createWayPlanService } from "./DefaultWayPlanService";
 import { GDSLimoApiResponse } from "../models/GDSLimoApiResponse";
+import { Mission } from "../models/Mission";
+import { GDSLimoNewItem } from "../models/GDSLimoNewItem";
 
 export function createGDSLimoService(): GDSLimoService {
     const wayPlanService = createWayPlanService();
@@ -17,7 +19,7 @@ export function createGDSLimoService(): GDSLimoService {
         async getFilteredMissions(params): Promise<GDSLimoApiResponse> {
             return wayPlanService.getAllRessources(params);
         },
-        async createMission(mission: any): Promise<GDSLimoApiResponse> {
+        async createMission(mission: Mission): Promise<GDSLimoNewItem> {
             return wayPlanService.createResource(mission);
         }
     };

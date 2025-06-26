@@ -3,6 +3,8 @@ import { WayPlanApiResponse } from "@/app/models/WayPlanApiResponse";
 import WayPlanService from "./interfaces/WayPlanService";
 import axios from "axios";
 import jwt from 'jsonwebtoken';
+import { WayPlanNewItem } from "../models/WayPlanNewItem";
+import { Mission } from "../models/Mission";
 
 type WayPlanJwtHeader = {
     alg: string;
@@ -101,7 +103,7 @@ export function createWayPlanService(): WayPlanService {
             return response.data;
 
         },
-        async createResource(): Promise<WayPlanApiResponse> {
+        async createResource(mission: Mission): Promise<WayPlanNewItem> {
             throw new Error("Function not implemented.");
         }
     }
