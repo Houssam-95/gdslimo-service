@@ -1,10 +1,9 @@
 import { GDSLimoApiResponse } from "@/app/models/GDSLimoApiResponse";
-import { GDSLimoNewItem } from "@/app/models/GDSLimoNewItem";
-import { Mission } from "@/app/models/Mission";
+import { MissionPayload } from "@/app/models/MissionPayload";
 
 
 export default interface GDSLimoService {
     getAllMissions: () => Promise<GDSLimoApiResponse>;
     getFilteredMissions(params: any): Promise<GDSLimoApiResponse>
-    createMission: (mission: Mission) => Promise<GDSLimoNewItem>;
+    createMission: (mission: MissionPayload) => Promise<MissionPayload>;
 }

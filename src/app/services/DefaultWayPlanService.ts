@@ -1,10 +1,9 @@
 
 import { WayPlanApiResponse } from "@/app/models/WayPlanApiResponse";
 import WayPlanService from "./interfaces/WayPlanService";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import jwt from 'jsonwebtoken';
-import { WayPlanNewItem } from "../models/WayPlanNewItem";
-import { Mission } from "../models/Mission";
+import { MissionPayload } from "../models/MissionPayload";
 
 type WayPlanJwtHeader = {
     alg: string;
@@ -16,8 +15,8 @@ type WayPlanJwtHeader = {
 export function createWayPlanService(): WayPlanService {
     const GDS_URL = process.env.GDS_URL || "https://api.waynium.com/gdsv3";
     const API_KEY = process.env.API_KEY || "dev";
-    const limo = API_KEY;
     const SECRET_KEY = process.env.SECRET_KEY || "SECRET_KEY";
+
     const JWT_TIME_EXPIRATION_ENABLED = (process.env.JWT_TIME_EXPIRATION_ENABLED) ? true : false;
 
     const webClient = axios.create({
@@ -30,7 +29,7 @@ export function createWayPlanService(): WayPlanService {
         params: {}
     });
 
-    function defineJWT(params: any = []) {
+    function defineJWTWithPayload(params: any = []) {
         const jwtHeader: WayPlanJwtHeader = {
             alg: 'HS256',
             typ: 'JWT',
@@ -41,7 +40,7 @@ export function createWayPlanService(): WayPlanService {
             const expirationTime = Math.floor((new Date().getTime() / 1000));
             return jwt.sign(
                 {
-                    "limo": "dev",
+                    "limo": API_KEY,
                     "params": params
                 },
                 SECRET_KEY,
@@ -52,9 +51,44 @@ export function createWayPlanService(): WayPlanService {
         // JWT Time expiration not enabled we return an jwt without expiration
         return jwt.sign(
             {
-                "limo": "dev",
+                "limo": API_KEY,
                 "params": params,
             },
+            SECRET_KEY,
+            { header: jwtHeader }
+        );
+    }
+
+    function defineJWTForCreateMission(missionData: MissionPayload): string {
+        // body guard for missionPayload even if already taken care in missionController
+        if (!missionData || missionData.length === 0 || !missionData[0]?.params) {
+            throw new Error("Invalid or empty missionData structure for JWT creation.");
+        }
+
+        // payload need to be `{ "limo": "...", "params": { ... } }`
+        const jwtPayloadContent = {
+            limo: missionData[0].limo,
+            params: missionData[0].params
+        };
+
+        const jwtHeader: WayPlanJwtHeader = {
+            alg: 'HS256',
+            typ: 'JWT',
+            apiKey: API_KEY,
+        };
+
+        const expirationTime = Math.floor((new Date().getTime() / 1000));
+
+        if (JWT_TIME_EXPIRATION_ENABLED) {
+            return jwt.sign(
+                jwtPayloadContent,
+                SECRET_KEY,
+                { header: jwtHeader, expiresIn: expirationTime }
+            );
+        }
+
+        return jwt.sign(
+            jwtPayloadContent,
             SECRET_KEY,
             { header: jwtHeader }
         );
@@ -64,47 +98,62 @@ export function createWayPlanService(): WayPlanService {
     return {
         async getAllRessources(params: any = { "C_GEN_MISSION": [] }): Promise<WayPlanApiResponse> {
             console.log(`📡 [WayPlanService] getAllRessources()`,);
-            const jwtToken = defineJWT(params);
 
-            const response = await webClient.post<WayPlanApiResponse>(
-                "/get-ressource",
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${jwtToken}`,
-                    }
-                }
-            );
+            const jwtToken = defineJWTWithPayload(params);
 
-            // a response has limo value as key { "dev": {} } instead of { "limo": "dev" }
-            const fakeData: WayPlanApiResponse = {
-                "john_doe": {
-                    "C_GEN_MISSION": [
-                        {
-                            "MIS_ID": "1001",
-                            "status": "PENDING",
-                            "description": "Première mission de livraison."
-                        },
-                        {
-                            "MIS_ID": "1002",
-                            "status": "COMPLETED",
-                            "description": "Mission de récupération de colis."
-                        },
-                        {
-                            "MIS_ID": "1003",
-                            "status": "IN_PROGRESS",
-                            "description": "Nouvelle assignation en cours."
+            try {
+                // empty body, payload already in jwt
+                const response = await webClient.post<WayPlanApiResponse>(
+                    "/get-ressource",
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${jwtToken}`,
                         }
-                    ]
+                    }
+                );
+                return response.data;
+
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.error(`Erreur lors de l'envoi de la requête GET-RESOURCE à Wayplan : ${error.message}`);
+                    if (error.response) {
+                        console.error('Statut HTTP :', error.response.status);
+                        console.error("JSON error: ", JSON.stringify(error.response.data, null, 2));
+                    }
+                    throw new Error(`Erreur Wayplan API pour (get-ressource): ${error.response?.status} - ${JSON.stringify(error.response?.data)}`);
+                } else {
+                    throw error;
                 }
             }
-
-            //return fakeData;
-            return response.data;
-
         },
-        async createResource(mission: Mission): Promise<WayPlanNewItem> {
-            throw new Error("Function not implemented.");
+        async createResource(missionData: MissionPayload): Promise<MissionPayload> {
+            console.log(`📡 [WayPlanService] createResource()`);
+
+            const jwtToken = defineJWTForCreateMission(missionData);
+
+            try {
+                // empty body, payload already in jwt
+                const response = await webClient.post(
+                    "/set-ressource-v2",
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${jwtToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                    }
+                );
+                return response.data;
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.error(`📡 [WayPlanService] createResource() axios.error >> on create/update : ${error}`);
+                    throw error;
+                } else {
+                    console.error(`📡 [WayPlanService] createResource() error on create/update`);
+                    throw new Error('Une erreur inattendue est survenue dans le service de création de mission.');
+                }
+            }
         }
     }
 }
