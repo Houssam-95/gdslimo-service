@@ -1,0 +1,44 @@
+# .github/workflows/deploy-to-render.yml
+# Ce workflow déploie une application Node.js sur Render à chaque push sur 'main'.
+
+name: Déploiement Node.js vers Render
+
+on:
+  push:
+    branches:
+      - main # Déclenche le workflow à chaque push sur la branche 'main'
+  workflow_dispatch: # Permet de lancer le workflow manuellement depuis GitHub
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Exécute le job sur un runner Ubuntu hébergé par GitHub
+
+    steps:
+      - name: Checkout du code du dépôt
+        uses: actions/checkout@v4
+
+      - name: Configuration de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x' # Ou la version de Node.js que vous utilisez (ex: '20.x')
+          cache: 'npm'
+
+      - name: Installation des dépendances
+        run: npm install
+
+      - name: Exécution du script de build (TypeScript compilation)
+        run: npm run build 
+
+      # NOTE IMPORTANTE:
+      # Si vous avez des tests, ajoutez une étape 'npm test' ici AVANT le déploiement.
+      # Le déploiement ne devrait se faire que si les tests passent.
+      # - name: Run tests
+      #   run: npm test
+
+      - name: Déploiement vers Render
+        uses: render-actions/deploy@v1.3.0 # Utilise l'action officielle de déploiement Render
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }} # Votre ID de service Render (secret GitHub)
+          api_key: ${{ secrets.RENDER_API_KEY }} # Votre clé API Render (secret GitHub)
+          wait_deploy: true # Attendre que le déploiement soit terminé pour que l'action se termine
+
