@@ -36,7 +36,7 @@ jobs:
       #   run: npm test
 
       - name: Déploiement vers Render
-        uses: render-actions/deploy@v1.3.0 # Utilise l'action officielle de déploiement Render
+        uses: JorgeLNJunior/render-deploy@v1.4.5 # Vérifiez la dernière version sur GitHub Marketplace
         with:
           service_id: ${{ secrets.RENDER_SERVICE_ID }} # Votre ID de service Render (secret GitHub)
           api_key: ${{ secrets.RENDER_API_KEY }} # Votre clé API Render (secret GitHub)
