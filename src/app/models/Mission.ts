@@ -5,6 +5,10 @@ import { Presence } from "./Presence";
 
 // C_GEN_MISSION (MIS)
 export type Mission = {
+    MIS_ID?: string;
+    MIS_COM_ID?: string;
+    MIS_NUMERO?: string;
+    MIS_VERSION?: string;
     ref?: string;
     MIS_TSE_ID: string;
     MIS_TVE_ID: string;
